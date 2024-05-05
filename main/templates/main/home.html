@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+            integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container-fluid min-vh-100 position-relative overflow-hidden">
+        <div class="position-absolute w-100 h-100 z-1"
+            style="background-image: url('https://assets.tes.com/content-attachments/s3fs-public/styles/news_article_ml_x2/public/tes-resources-blog-images/tes-resources-maths4everyone.png?h=a6967b5f&itok=POajUrPG');  background-size: cover; background-attachment: fixed; opacity: 0.1;">
+        </div>
+        <div class="position-absolute w-100 h-100  row d-flex flex-column h-100 justify-content-center align-items-center z-2">
+            <div class="w-50 fs-2 text-center mb-3">Nonlineare Quations Solver</div>
+            <form class="w-50 justify-content-center" method="post" action="{% url 'main' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="function" class="form-label fs-4">F(x)</label>
+                    <input type="text" name="function" value="{{ function }}" class="form-control fs-4" style="border-color:rgb(199, 202, 206);" id="function">
+                </div>
+                <div class="mb-3 d-flex gap-4">
+                    <label for="start" class="form-label fs-4">От</label>
+                    <input value="{{ start }}" type="text" name="start" class="form-control fs-4" style="border-color:rgb(199, 202, 206);" id="start">
+                    <label for="end" class="form-label fs-4">До</label>
+                    <input value="{{ end }}" type="text" name="end" class="form-control fs-4" style="border-color:rgb(199, 202, 206);" id="end">
+                </div>
+                <div class="mb-3 d-flex gap-4">
+                    <label for="step_size" class="form-label fs-4">Величина допуска δ</label>
+                    <input value="{{ step_size }}" type="text" name="step_size" class="form-control w-50 fs-4" style="border-color:rgb(199, 202, 206);" id="step_size">
+                </div>
+                <div class="mb-3 d-flex gap-4">
+                    <label for="accuracy" class="form-label fs-4">Точность ε</label>
+                    <input value="{{ accuracy }}" type="text" name="accuracy" class="form-control w-50 fs-4" style="border-color:rgb(199, 202, 206);" id="accuracy">
+                </div>
+                <div class="w-100 d-flex justify-content-center">
+                    <button type="submit" class="btn btn-primary mb-3 fs-4 w-25">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% if error %}
+        <div class="fs-1 text-danger container-fluid w-100 text-center mt-4 mb-5">{{ error }}</div>
+    {% elif function %}
+        <div class="container-fluid fs-2 w-100 mt-4 mb-5">
+            {% for m in result %}
+                <div class="fs-2 text-center">
+                    {% if forloop.counter == 1 %}
+                    Метод половинного деления
+                    {% elif forloop.counter == 2 %}
+                    Метод хорд
+                    {% elif forloop.counter == 3 %}
+                    Метод Ньютона
+                    {% elif forloop.counter == 4 %}
+                    Метод секущих
+                    {% elif forloop.counter == 5 %}
+                    Метод гибрид Ньютона-половинного деления
+                    {% endif %}
+                </div>
+                <div class="fs-5 mb-4 text-center">
+                    <div class="d-flex gap-2 justify-content-center">
+                        <div>Релультат:</div>
+                        <div class="fw-bold text-success">{{ m.0 }}</div>
+                    </div>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <div>Время:</div>
+                        <div class="fw-bold text-primary">{{ m.1 }}</div>
+                        <div>секунд</div>
+                    </div>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <div>Итерации:</div>
+                        <div class="fw-bold">{{ m.2 }}</div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
+        integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
+        crossorigin="anonymous"></script>
+    <script>
+        function scrollToBottom() {
+            // Получаем текущее положение прокрутки
+            var currentPosition = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+
+            // Вычисляем позицию, куда нужно прокрутить
+            var targetPosition = currentPosition + 400;
+
+            // Прокручиваем до указанной позиции с плавной анимацией
+            window.scrollTo({
+                top: targetPosition,
+                behavior: 'smooth'  // Устанавливаем плавное поведение
+            });
+        }
+
+        scrollToBottom();
+    </script>
+</body>
+</html>
