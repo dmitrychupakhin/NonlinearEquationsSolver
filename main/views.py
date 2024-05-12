@@ -1,7 +1,7 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from sympy import symbols, sympify, lambdify, diff
+from sympy import *
 import math
 import time
 # Create your views here.
@@ -49,29 +49,45 @@ def chord_method(f, a, b, step, epsilon):
     T1 = time.time()
     return (a + b) / 2, (T1 - T0) * 1000, k
 
-def newton_method(f, df, a, epsilon):
+""" def newton_method(f, df, a, epsilon):
+    x = symbols('x')
     T0 = time.time()
     k = 1
     while True:
-        b = a - f.subs(symbols('x'), a) / df.subs(symbols('x'), a)
+        b = a - (f.subs(x, a) / df.subs(x, a)).evalf()
         if abs(b - a) < epsilon:
             break
         a = b
         k += 1
     T1 = time.time()
-    return b, (T1 - T0) * 1000, k
-
-def secant_method(f, a, b, epsilon):
-    T0 = time.time()
+    b, b_r = b.as_real_imag()
+    return b, (T1 - T0) * 1000, k """
+def newton_method(f, df, a, b, epsilon, delta):
+    x = symbols('x')
     k = 0
-    while True:
-        c = b - f.subs(symbols('x'), b) * (b - a) / (f.subs(symbols('x'), b) - f.subs(symbols('x'), a))
-        if abs(c - b) < epsilon:
-            T1 = time.time()
-            return b, (T1 - T0) * 1000, k
-        a = b
-        b = c
+    t = b if f.subs(x, b) * f.diff().diff().subs(x, b) > 0 else a
+    df = f.diff()
+    T0 = time.time()
+    while abs(f.subs(x, t))> epsilon and (min(abs(a - t), abs(b - t)) > delta or t == b or t == a):
+        t_pred = t
+        t = t_pred - f.subs(x, t_pred) / df.subs(x, t_pred)
         k += 1
+    T1 = time.time()
+    return t, (T1 - T0) * 1000, k
+
+def secant_method(f, a, b, epsilon, delta):
+    x = symbols('x')
+    t = b if f.subs(x, b) * f.diff().diff().subs(x, b) > 0 else a
+    h = (b - a) / 100
+    k = 1
+    T0 = time.time()
+    while abs(f.subs(x, t))>epsilon and (min(abs(a - t), abs(b - t)) > delta or t == b or t == a):
+        t_pred = t
+        t = t_pred - f.subs(x, t_pred) * h / (f.subs(x, t_pred + h) - f.subs(x, t_pred))
+        h = t_pred - t
+        k += 1
+    T1 = time.time()
+    return t, (T1 - T0) * 1000, k
 
 def gibrid_method(f, a, b,step, epsilon):
     t = (a + b) / 2
@@ -106,9 +122,10 @@ def main(request):
             start = float(request.POST.get('start'))
             end = float(request.POST.get('end'))
             step_size = float(request.POST.get('step_size'))
-            accuracy = float(request.POST.get('accuracy'))   
-            
-            if function.subs(x, start) * function.subs(x, end) > 0:
+            accuracy = float(request.POST.get('accuracy'))
+            print(function.subs(x, start).evalf() )  
+            if function.subs(x, start).evalf() * function.subs(x, end).evalf() > 0:
+                
                 context = {
                     'error': 'Неверная функция',
                     'function': request.POST.get('function'),
@@ -119,9 +136,9 @@ def main(request):
                 }
                 return render(request, 'main/home.html', context)
             
-        except:
+        except Exception as e:
             context = {
-                'error': 'Неправильные данные',
+                'error': e,
                 'function': request.POST.get('function'),
                 'start': request.POST.get('start'),
                 'end': request.POST.get('end'),
@@ -140,8 +157,8 @@ def main(request):
         
         result = [dichotomy_method(function, start, end, step_size, accuracy),
                   chord_method(function, start, end, step_size, accuracy),
-                  newton_method(function, function.diff(), start, accuracy),
-                  secant_method(function, start, end, accuracy),
+                  newton_method(function, function.diff(), start, end, accuracy, step_size),
+                  secant_method(function, start, end, accuracy, step_size),
                   gibrid_method(function, start, end, step_size, accuracy)]
         
         context['result'] = result
